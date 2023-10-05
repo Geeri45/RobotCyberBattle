@@ -40,15 +40,15 @@ void fold() {           // складывание и взятие
   rotate(seg_2, 125);
   rotate(seg_3, 125);
   rotate(seg_4, 90);
-  rotate(cl, 0);
+  rotate(cl, 110);
 }
 
 void lift() {
-  rotate(seg_1, 130);
-  rotate(seg_2, 120);
-  rotate(seg_3, 120);
+  rotate(seg_1, 125);
+  rotate(seg_2, 115);
+  rotate(seg_3, 115);
   rotate(seg_4, 90);
-  rotate(cl, 0);
+  rotate(cl, 110);
 }
 
 void drop() { rotate(cl, -110); }   // выкинуть
@@ -61,23 +61,52 @@ void stop() {           // остановка
 }
 
 void forward() {        // движение вперед
+  digitalWrite(MLB, 0);
+  digitalWrite(MRB, 0);
   digitalWrite(MLF, 1);
   digitalWrite(MRF, 1);
 }
 
 void back() {           // движение назад
+  digitalWrite(MLF, 0);
+  digitalWrite(MRF, 0);
   digitalWrite(MLB, 1);
   digitalWrite(MRB, 1);
 }
 
 void right() {          // поворот вправо
+  digitalWrite(MLB, 0);
+  digitalWrite(MRF, 0);
   digitalWrite(MLF, 1);
   digitalWrite(MRB, 1);
 }
 
 void left() {           // поворот влево
+  digitalWrite(MRB, 0);
+  digitalWrite(MLF, 0);
   digitalWrite(MRF, 1);
   digitalWrite(MLB, 1);
+}
+
+void start() {
+  back();
+  delay(40);
+  stop();
+  fold();
+  lift();
+  forward();
+  delay(395);
+  right();
+  delay(40);
+  forward();
+  delay(20);
+  right();
+  delay(60);
+  forward();
+  delay(60);
+  right();
+  delay(70);
+  stop();
 }
 
 void setup() {
@@ -86,6 +115,7 @@ void setup() {
   pinMode(MRF, OUTPUT);
   pinMode(MRB, OUTPUT);
   irrecv.enableIRIn(); // запускаем прием
+  start();
 }
 
 void loop() {
