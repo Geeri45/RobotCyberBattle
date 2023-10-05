@@ -1,31 +1,57 @@
-#define MLF 1 // пин для левого мотора вперед
-#define MLB 1 // пин для левого мотора назад
-#define MRF 1 // пин для правого мотора вперед
-#define MRB 1 // пин для правого мотора назад
-#define IRP 2 // пин для инфрокрасного датчика
+#define MLF 5 // пин для левого мотора вперед
+#define MLB 4 // пин для левого мотора назад
+#define MRF 3 // пин для правого мотора вперед
+#define MRB 2 // пин для правого мотора назад
+#define IRP 8 // пин для инфрокрасного датчика
 
-#define button_forward 0x000 // код для пульта вперед
-#define button_left 0x001    // код для пульта влево
-#define button_right 0x002   // код для пульта вправо
-#define button_back 0x003    // код для пульта назад
-#define button_a 0x004       // код для пульта A
-#define button_b 0x005       // код для пульта B
-#define button_c 0x006       // код для пульта C
-#define button_d 0x007       // код для пульта D
+#define seg_1 9  // пин для первого сегмента клешни
+#define seg_2 10 // пин для второго сегмента клешни
+#define seg_3 11  // пин для третьего сегмента клешни
+#define seg_4 12  // пин для четвертого сегмента клешни
+#define cl 13 // пин для захвата клешни
 
-#include "IRremote.h"
+#define button_forward 4049 // код для пульта вперед
+#define button_left 4052 // код для пульта влево
+#define button_right 4051   // код для пульта вправо
+#define button_back 4050    // код для пульта назад
+#define button_a 4010       // код для пульта A
+#define button_b 4011       // код для пульта B
+#define button_c 4012      // код для пульта C
+#define button_d 4013       // код для пульта D
+
+#include <IRremote.h>
+#include <Servo.h>
+
+Servo myservo;
 
 IRrecv irrecv(IRP);
 decode_results results;
 unsigned long Key;
 
-void setup() {
-  pinMode(MLF, OUTPUT); // инициализация пинов ↓
-  pinMode(MLB, OUTPUT);
-  pinMode(MRF, OUTPUT);
-  pinMode(MRB, OUTPUT);
-  irrecv.enableIRIn(); // запускаем прием
+void rotate(int pin, int deg) {
+  myservo.attach(pin);
+  myservo.write(deg);
+  delay(100);
+  myservo.detach();
 }
+
+void fold() {           // складывание и взятие
+  rotate(seg_1, 135);
+  rotate(seg_2, 125);
+  rotate(seg_3, 125);
+  rotate(seg_4, 90);
+  rotate(cl, 0);
+}
+
+void lift() {
+  rotate(seg_1, 130);
+  rotate(seg_2, 120);
+  rotate(seg_3, 120);
+  rotate(seg_4, 90);
+  rotate(cl, 0);
+}
+
+void drop() { rotate(cl, -110); }   // выкинуть
 
 void stop() {           // остановка
   digitalWrite(MLB, 0);
@@ -54,28 +80,53 @@ void left() {           // поворот влево
   digitalWrite(MLB, 1);
 }
 
+void setup() {
+  pinMode(MLF, OUTPUT); // инициализация пинов ↓
+  pinMode(MLB, OUTPUT);
+  pinMode(MRF, OUTPUT);
+  pinMode(MRB, OUTPUT);
+  irrecv.enableIRIn(); // запускаем прием
+}
+
 void loop() {
   if (irrecv.decode(&results))  { // проверка данных
       Key = results.value;
       switch (Key)  {
         case button_forward:
           forward();  // вперед
+          delay(20);
+          stop();
           break;
         case button_right:
-          back();   // назад
+          right();   // вправо
+          delay(20);
+          stop();
           break;
         case button_left: 
           left();  // налево
+          delay(20);
+          stop();
           break;
         case button_back: 
-          right(); // направо
+          back(); // назад
+          delay(20);
+          stop();
           break;
-        default:
+        case button_a:
+          fold(); // поднятие
+          break;
+        case button_b: // сделать клешню выше
+          lift();
+          break;
+        case button_c: // выкинуть
+          drop();
+          break;
+        case button_d:
+          forward();  // вперед дальше
+          delay(200);
+          stop();
           break;
       }
       irrecv.resume(); // ожидаем следующей передачи
-    } else {
-      stop();
-      irrecv.resume();
     }
 }
